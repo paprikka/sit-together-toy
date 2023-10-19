@@ -36,6 +36,10 @@ export const initAudio = async () => {
 		load('chirp', {
 			src: '/sfx/chirp.mp3',
 			volume: 0.4
+		}),
+		load('gong', {
+			src: '/sfx/gong.mp3',
+			volume: 0.2
 		})
 	]);
 

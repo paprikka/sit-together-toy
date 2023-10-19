@@ -5,9 +5,10 @@
 	import { randomFromString } from '$lib/random-from-string';
 	import { onMount } from 'svelte';
 	import { fade } from 'svelte/transition';
-	import type { ServerRoomUpdateMessage } from '../../party/types';
+	import type { ClientChirpMessage, ServerRoomUpdateMessage } from '../../party/types';
 	import { initAudio, type Audio } from './audio';
-	import { messages } from './socket';
+	import { messages, sendMessage } from './socket';
+	import { derived } from 'svelte/store';
 
 	let audio: Audio | null = null;
 
@@ -65,11 +66,25 @@
 
 			newClientIDs.forEach((clientID) => {
 				$dots.set(clientID, makeDot(clientID));
-				audio?.getSound('leave')?.play();
+				audio?.getSound('enter')?.play();
 			});
 
 			return $dots;
 		});
+	});
+
+	const lastMessage = derived(messages, ($messages) => {
+		if ($messages.length === 0) return null;
+		return $messages.at(-1);
+	});
+
+	lastMessage.subscribe(($lastMessage) => {
+		if (!$lastMessage) return;
+		if ($lastMessage.type !== 'server:broadcast-client-message') return;
+
+		const { message } = $lastMessage;
+
+		if (message.type === 'client:chirp') chirp();
 	});
 
 	let audioFadeDuration = 10000;
@@ -86,11 +101,24 @@
 
 	let isOverlayVisible = true;
 
+	let canChirp = true;
+	const chirpCooldown = 6000;
+
 	const chirp = () => {
 		if (!audio) return;
-		const chirp = audio.getSound('chirp');
+		const chirp = audio.getSound('gong');
 		if (!chirp) return;
 		chirp.play();
+	};
+
+	const onChirpClick = () => {
+		canChirp = false;
+		setTimeout(() => {
+			canChirp = true;
+		}, chirpCooldown);
+		sendMessage({
+			type: 'client:chirp'
+		} as ClientChirpMessage);
 	};
 </script>
 
@@ -105,7 +133,7 @@
 	</div>
 {/if}
 
-<button class="chirp" aria-label="chirp" on:click={chirp} />
+<button class="chirp" disabled={!canChirp} aria-label="chirp" on:click={onChirpClick} />
 
 <style>
 	.dots {
@@ -127,6 +155,7 @@
 	.overlay {
 		position: absolute;
 		inset: 0;
+		z-index: var(--layer-overlay);
 		background-color: rgba(0, 0, 0, 0.7);
 		display: grid;
 		place-content: center;
@@ -164,5 +193,35 @@
 		border: 2px solid black;
 		opacity: 0.8;
 		cursor: pointer;
+		animation: chirp 0.3s ease-in-out;
+	}
+
+	@keyframes chirp {
+		from {
+			scale: 0;
+			opacity: 0;
+		}
+		to {
+			scale: 1;
+			opacity: 1;
+		}
+	}
+	@keyframes chirp-disabled {
+		0% {
+			transform: scale(1);
+			opacity: 1;
+		}
+
+		75% {
+			opacity: 0;
+		}
+		100% {
+			transform: scale(5);
+			opacity: 0;
+		}
+	}
+
+	.chirp[disabled] {
+		animation: chirp-disabled 1s ease-out both;
 	}
 </style>
