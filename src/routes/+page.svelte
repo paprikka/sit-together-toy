@@ -156,10 +156,11 @@
 		position: absolute;
 		inset: 0;
 		z-index: var(--layer-overlay);
-		background-color: rgba(0, 0, 0, 0.7);
+		background-color: rgba(0, 0, 0, 0.8);
 		display: grid;
 		place-content: center;
 		place-items: center;
+		backdrop-filter: blur(0.5rem);
 	}
 
 	.overlay button {
@@ -172,7 +173,8 @@
 		font-family: inherit;
 		text-transform: uppercase;
 		opacity: 0.8;
-		font-size: 1rem;
+		font-size: var(--step--1);
+		padding: var(--step--2) var(--step-1);
 		cursor: pointer;
 	}
 
@@ -185,9 +187,10 @@
 	.chirp {
 		position: absolute;
 		bottom: 1rem;
-		right: 1rem;
-		width: 2rem;
-		height: 2rem;
+		left: 50%;
+		translate: -50% 0;
+		width: var(--step-5);
+		height: var(--step-5);
 		border-radius: 50%;
 		background-color: white;
 		border: 2px solid black;
