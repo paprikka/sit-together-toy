@@ -5,7 +5,8 @@
 	"scripts": {
 		"dev": "vite dev",
 		"dev:partykit": "pnpx partykit dev",
-		"build": "vite build",
+		"deploy:partykit": "partykit deploy",
+		"build": "vite build && pnpm deploy:partykit",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",

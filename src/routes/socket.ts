@@ -2,8 +2,10 @@ import PartySocket from 'partysocket';
 import { writable } from 'svelte/store';
 import type { ClientMessage, ServerMessage } from '../../party/types';
 
+import { env } from '$env/dynamic/public';
+
 const socket = new PartySocket({
-	host: 'localhost:1999',
+	host: env.PUBLIC_PARTYKIT_HOST,
 	room: 'shared'
 });
 
