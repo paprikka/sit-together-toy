@@ -111,7 +111,7 @@
 		chirp.play();
 	};
 
-	const testDots = Array(20)
+	const testDots = Array(50)
 		.fill(null)
 		.map((_, i) => makeDot(Math.random().toString()));
 
