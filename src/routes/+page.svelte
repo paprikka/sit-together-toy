@@ -111,6 +111,10 @@
 		chirp.play();
 	};
 
+	const testDots = Array(20)
+		.fill(null)
+		.map((_, i) => makeDot(Math.random().toString()));
+
 	const onChirpClick = () => {
 		canChirp = false;
 		setTimeout(() => {
@@ -123,7 +127,7 @@
 </script>
 
 <div class="dots">
-	{#each [...$dots.values()] as dot (dot.id)}
+	{#each [...testDots, ...$dots.values()] as dot (dot.id)}
 		<Dot state={dot} />
 	{/each}
 </div>
