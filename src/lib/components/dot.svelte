@@ -1,22 +1,21 @@
 <script lang="ts">
-	import { scale } from 'svelte/transition';
-	import { bounceOut } from 'svelte/easing';
 	import type { DotState } from '$lib/dot-store';
-	import { randomFromString, randomRangeFromString } from '$lib/random-from-string';
+	import { random } from '$lib/random';
+	import { bounceOut } from 'svelte/easing';
+	import { scale } from 'svelte/transition';
 
 	export let state: DotState;
-	const { id, status, x, y } = state;
-	const seed = randomFromString(id);
+	const { id, status, x, y, seed } = state;
 </script>
 
 <div
 	style:--x={x + 'vw'}
 	style:--y={y + 'vh'}
-	style:--scale={randomRangeFromString(id, 0.5, 1)}
-	style:--delay={randomRangeFromString(id, 0, 0.5) + 's'}
-	style:--h={randomFromString(id) * 360}
+	style:--scale={random(seed, 0.5, 1)}
+	style:--delay={random(seed, 0, 0.5) + 's'}
+	style:--h={random(seed) * 360}
 	class="container"
-	transition:scale={{ duration: 1000 + seed * 1000, easing: bounceOut }}
+	transition:scale={{ duration: random(seed, 1000, 2000), easing: bounceOut }}
 />
 
 <style>

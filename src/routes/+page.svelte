@@ -1,31 +1,27 @@
 <script lang="ts">
 	import Dot from '$lib/components/dot.svelte';
-	import type { DotState } from '$lib/dot-store';
 	import { dots } from '$lib/dot-store';
-	import { randomFromString } from '$lib/random-from-string';
 	import { onMount } from 'svelte';
+	import { derived } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 	import type { ClientChirpMessage, ServerRoomUpdateMessage } from '../../party/types';
 	import { initAudio, type Audio } from './audio';
 	import { messages, sendMessage } from './socket';
-	import { derived } from 'svelte/store';
+	import { makeDot } from '$lib/dot-store';
 
 	let audio: Audio | null = null;
 
 	onMount(() => {
 		initAudio().then((instance) => (audio = instance));
+		if (location.hostname === 'localhost') {
+			audioFadeDuration = 100;
+			chirpCooldown = 100;
+		}
 		return () => {
 			console.log('dispose');
 			if (!audio) return;
 			audio.dispose();
 		};
-	});
-
-	const makeDot = (clientID: string): DotState => ({
-		id: clientID,
-		x: 50 + (randomFromString(clientID) - 0.5) * 80,
-		y: 50 + (randomFromString(clientID + 'x') - 0.5) * 80,
-		status: 'entering'
 	});
 
 	const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -88,6 +84,9 @@
 	});
 
 	let audioFadeDuration = 10000;
+	let isOverlayVisible = true;
+	let canChirp = true;
+	let chirpCooldown = 6000;
 
 	const onStartClick = () => {
 		isOverlayVisible = false;
@@ -99,11 +98,6 @@
 		bg.fade(0, 0.4, audioFadeDuration, id);
 	};
 
-	let isOverlayVisible = true;
-
-	let canChirp = true;
-	const chirpCooldown = 6000;
-
 	const chirp = () => {
 		if (!audio) return;
 		const chirp = audio.getSound('gong');
@@ -113,7 +107,7 @@
 
 	const testDots = Array(50)
 		.fill(null)
-		.map((_, i) => makeDot(Math.random().toString()));
+		.map((_, i) => makeDot(Math.floor(Math.random() * 100000).toString()));
 
 	const onChirpClick = () => {
 		canChirp = false;
