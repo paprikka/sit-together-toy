@@ -61,8 +61,8 @@ export const makeDot = (clientID: string): DotState => {
 
 	return {
 		id: clientID,
-		x: 50 + x,
-		y: 50 + y,
+		x: x,
+		y: y,
 		status: 'entering',
 		seed
 	};

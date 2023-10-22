@@ -11,87 +11,118 @@
 <div
 	style:--x={x + 'vw'}
 	style:--y={y + 'vh'}
-	style:--scale={random(seed, 0.5, 1)}
 	style:--delay={random(seed, 0, 0.5) + 's'}
 	style:--h={random(seed) * 360}
-	class="container"
-	transition:scale={{ duration: random(seed, 1000, 2000), easing: bounceOut }}
-/>
+	style:--scale={random(seed, 0.1, 1)}
+	style:--spin-speed={random(seed, 0.1, 1)}
+	class="transform-anchor"
+>
+	<div
+		class="container"
+		transition:scale={{ duration: random(seed, 1000, 2000), easing: bounceOut }}
+	>
+		<div class="halo-1" />
+		<div class="halo-2" />
+		<div class="core" />
+	</div>
+</div>
 
 <style>
+	@keyframes spin {
+		0% {
+			transform: rotate(0deg);
+		}
+		100% {
+			transform: rotate(360deg);
+		}
+	}
+
+	@keyframes flicker {
+		0% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0;
+		}
+	}
+
+	.transform-anchor {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		translate: -50% -50%;
+
+		animation: spin calc(100s * var(--spin-speed)) linear infinite;
+	}
+
 	.container {
-		--h: 0deg;
-		--s: 100%;
-		--l: 95%;
-
-		--c: hsl(var(--h) var(--s) var(--l) / 0.3);
-		--w: 29px;
-		--base-scale: 0.4;
-		--scale: 1;
-		--delay: 0;
-
-		--opacity-min: 0.95;
-		--opacity-max: 1;
+		--base-dimension: 10px;
 
 		position: absolute;
 		left: var(--x);
 		top: var(--y);
-		scale: calc(var(--base-scale) * var(--scale));
 
-		width: var(--w);
-		height: var(--w);
-		border-radius: 50%;
-		background-image: radial-gradient(hsl(var(--h) var(--s) var(--l) / 0.3), transparent 50%);
+		--core-blur: 0.5px;
+		--halo-1-blur: 5px;
+		--halo-2-blur: 10px;
 
-		animation: fade-center calc(1s * var(--scale)) infinite both;
-		animation-delay: calc(var(--delay));
+		--core-flicker-speed: 0.11;
+		--halo-1-flicker-speed: 0.13;
+		--halo-2-flicker-speed: 0.37;
 
-		cursor: pointer;
+		--core-min-opacity: 0.5;
+		--core-max-opacity: 1;
+
+		--halo-1-min-opacity: 0.25;
+		--halo-1-max-opacity: 0.5;
+
+		--halo-2-min-opacity: 0.125;
+		--halo-2-max-opacity: 0.25;
 	}
 
-	.container::after {
-		content: '';
+	.halo-1 {
 		position: absolute;
+
+		width: calc(var(--base-dimension) * var(--scale) * 4);
+		height: calc(var(--base-dimension) * var(--scale) * 4);
+
+		--base-color: hsl(calc(var(--h) * 1deg) 100% 96% / 0.25);
+		background-color: var(--base-color);
+
 		left: 50%;
 		top: 50%;
 		translate: -50% -50%;
-
-		width: 15%;
-		height: 15%;
 		border-radius: 50%;
-		background-color: var(--c);
-		filter: blur(1px);
 
-		--opacity-min: 0.5;
-		--opacity-max: 0.8;
-		animation: fade-center 1.1s infinite both;
+		filter: blur(var(--halo-1-blur));
 	}
 
-	.container::before {
-		--c: hsl(var(--h) var(--s) var(--l) / 0.1);
-		content: '';
+	.halo-2 {
 		position: absolute;
+
+		width: calc(var(--base-dimension) * var(--scale) * 8);
+		height: calc(var(--base-dimension) * var(--scale) * 8);
+
+		--base-color: hsl(calc(var(--h) * 1deg) 100% 96% / 0.125);
+		background-color: var(--base-color);
+
 		left: 50%;
 		top: 50%;
 		translate: -50% -50%;
-
-		width: 200%;
-		height: 200%;
 		border-radius: 50%;
-		background-color: var(--c);
-		filter: blur(10px);
 
-		--opacity-min: 0.1;
-		--opacity-max: 1;
-		animation: fade-center 3.4s infinite alternate;
+		filter: blur(var(--halo-2-blur));
 	}
 
-	@keyframes fade-center {
-		from {
-			opacity: var(--opacity-min);
-		}
-		to {
-			opacity: var(--opacity-max);
-		}
+	.core {
+		--base-color: hsl(calc(var(--h) * 1deg), 100%, 96%);
+
+		width: calc(var(--base-dimension) * var(--scale));
+		height: calc(var(--base-dimension) * var(--scale));
+
+		border-radius: 50%;
+		background-color: var(--base-color);
+
+		filter: blur(var(--core-blur));
 	}
 </style>

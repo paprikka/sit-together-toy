@@ -8,10 +8,13 @@
 	import { initAudio, type Audio } from './audio';
 	import { messages, sendMessage } from './socket';
 	import { makeDot } from '$lib/dot-store';
+	import Dots from '$lib/components/dots.svelte';
 
 	let audio: Audio | null = null;
 
 	onMount(() => {
+		if (location.hostname === 'localhost') onStartClick();
+
 		initAudio().then((instance) => (audio = instance));
 		if (location.hostname === 'localhost') {
 			audioFadeDuration = 100;
@@ -105,10 +108,6 @@
 		chirp.play();
 	};
 
-	const testDots = Array(50)
-		.fill(null)
-		.map((_, i) => makeDot(Math.floor(Math.random() * 100000).toString()));
-
 	const onChirpClick = () => {
 		canChirp = false;
 		setTimeout(() => {
@@ -120,11 +119,7 @@
 	};
 </script>
 
-<div class="dots">
-	{#each [...testDots, ...$dots.values()] as dot (dot.id)}
-		<Dot state={dot} />
-	{/each}
-</div>
+<Dots />
 {#if isOverlayVisible}
 	<div class="overlay" transition:fade={{ duration: audioFadeDuration / 3 }}>
 		<button on:click={onStartClick}>start</button>
@@ -138,7 +133,7 @@
 		position: absolute;
 		inset: 0;
 		transform-origin: center;
-		animation: spin 1000s linear infinite;
+		animation: spin 100s linear infinite;
 	}
 
 	@keyframes spin {

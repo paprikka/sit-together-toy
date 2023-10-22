@@ -19,6 +19,7 @@
 		"@sveltejs/adapter-auto": "^2.0.0",
 		"@sveltejs/kit": "^1.20.4",
 		"@types/howler": "^2.2.10",
+		"@types/three": "^0.157.2",
 		"@typescript-eslint/eslint-plugin": "^6.0.0",
 		"@typescript-eslint/parser": "^6.0.0",
 		"concurrently": "^8.2.2",
@@ -38,6 +39,7 @@
 	"type": "module",
 	"dependencies": {
 		"howler": "^2.2.4",
-		"partysocket": "0.0.12"
+		"partysocket": "0.0.12",
+		"three": "^0.157.0"
 	}
 }
