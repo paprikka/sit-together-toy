@@ -13,7 +13,7 @@
 	let audio: Audio | null = null;
 
 	onMount(() => {
-		if (location.hostname === 'localhost') onStartClick();
+		// if (location.hostname === 'localhost') onStartClick();
 
 		initAudio().then((instance) => (audio = instance));
 		if (location.hostname === 'localhost') {
