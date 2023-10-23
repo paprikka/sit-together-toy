@@ -6,13 +6,19 @@
 
 <style>
 	:root {
-		font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+		font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
 		line-height: 1.5;
 		font-weight: 400;
 
+		--color-text-h: 30deg;
+		--color-text-s: 60.98%;
+		--color-text-l: 83.92%;
+
+		--color-text: hsl(var(--color-text-h) var(--color-text-s) var(--color-text-l));
+
 		color-scheme: light dark;
-		color: white;
-		background-color: black;
+		color: var(--color-text);
+		background-color: var(--color-bg);
 
 		font-synthesis: none;
 		text-rendering: optimizeLegibility;

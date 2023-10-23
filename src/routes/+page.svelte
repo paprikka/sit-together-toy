@@ -9,6 +9,13 @@
 	import { messages, sendMessage } from './socket';
 	import { makeDot } from '$lib/dot-store';
 	import Dots from '$lib/components/dots.svelte';
+	import ChirpButton from '$lib/components/chirp-button.svelte';
+
+	let audioFadeDuration = 7000;
+	let overlayFadeDuration = 2000;
+	let isOverlayVisible = true;
+	let canChirp = true;
+	let chirpCooldown = 3000;
 
 	let audio: Audio | null = null;
 
@@ -16,10 +23,12 @@
 		// if (location.hostname === 'localhost') onStartClick();
 
 		initAudio().then((instance) => (audio = instance));
-		if (location.hostname === 'localhost') {
+		if (new URLSearchParams(location.search).has('debug')) {
 			audioFadeDuration = 100;
+			overlayFadeDuration = 100;
 			chirpCooldown = 100;
 		}
+
 		return () => {
 			console.log('dispose');
 			if (!audio) return;
@@ -86,11 +95,6 @@
 		if (message.type === 'client:chirp') chirp();
 	});
 
-	let audioFadeDuration = 10000;
-	let isOverlayVisible = true;
-	let canChirp = true;
-	let chirpCooldown = 6000;
-
 	const onStartClick = () => {
 		isOverlayVisible = false;
 		if (!audio) return;
@@ -110,6 +114,9 @@
 
 	const onChirpClick = () => {
 		canChirp = false;
+
+		audio?.getSound('gong')?.play();
+
 		setTimeout(() => {
 			canChirp = true;
 		}, chirpCooldown);
@@ -121,30 +128,14 @@
 
 <Dots />
 {#if isOverlayVisible}
-	<div class="overlay" transition:fade={{ duration: audioFadeDuration / 3 }}>
+	<div class="overlay" transition:fade={{ duration: overlayFadeDuration }}>
 		<button on:click={onStartClick}>start</button>
 	</div>
 {/if}
 
-<button class="chirp" disabled={!canChirp} aria-label="chirp" on:click={onChirpClick} />
+<ChirpButton cooldownDuration={`${chirpCooldown}ms`} on:click={onChirpClick} disabled={!canChirp} />
 
 <style>
-	.dots {
-		position: absolute;
-		inset: 0;
-		transform-origin: center;
-		animation: spin 100s linear infinite;
-	}
-
-	@keyframes spin {
-		0% {
-			transform: rotate(0deg);
-		}
-		100% {
-			transform: rotate(360deg);
-		}
-	}
-
 	.overlay {
 		position: absolute;
 		inset: 0;
@@ -153,19 +144,20 @@
 		display: grid;
 		place-content: center;
 		place-items: center;
-		backdrop-filter: blur(0.5rem);
 	}
 
 	.overlay button {
-		appearance: none;
-		border: 2px solid white;
-		background-color: white;
-		color: black;
+		--color: var(--color-text);
 
-		border-radius: 0.25rem;
+		appearance: none;
+		border: 2px solid var(--color);
+		background-color: transparent;
+		color: var(--color);
+		font-weight: 600;
+
+		border-radius: 0.4rem;
 		font-family: inherit;
 		text-transform: uppercase;
-		opacity: 0.8;
 		font-size: var(--step--1);
 		padding: var(--step--2) var(--step-1);
 		cursor: pointer;
@@ -173,51 +165,12 @@
 
 	@media (hover: hover) {
 		.overlay button:hover {
-			opacity: 1;
+			background-color: var(--color);
+			color: black;
 		}
 	}
 
-	.chirp {
-		position: absolute;
-		bottom: 1rem;
-		left: 50%;
-		translate: -50% 0;
-		width: var(--step-5);
-		height: var(--step-5);
-		border-radius: 50%;
-		background-color: white;
-		border: 2px solid black;
-		opacity: 0.8;
-		cursor: pointer;
-		animation: chirp 0.3s ease-in-out;
-	}
-
-	@keyframes chirp {
-		from {
-			scale: 0;
-			opacity: 0;
-		}
-		to {
-			scale: 1;
-			opacity: 1;
-		}
-	}
-	@keyframes chirp-disabled {
-		0% {
-			transform: scale(1);
-			opacity: 1;
-		}
-
-		75% {
-			opacity: 0;
-		}
-		100% {
-			transform: scale(5);
-			opacity: 0;
-		}
-	}
-
-	.chirp[disabled] {
-		animation: chirp-disabled 1s ease-out both;
+	.overlay button:active {
+		scale: 0.97;
 	}
 </style>

@@ -53,7 +53,7 @@ const polarToCartesian = (r: number, theta: number) => {
 
 export const makeDot = (clientID: string): DotState => {
 	const seed = idToNumber(clientID);
-	const r = random(seed, 0, 40);
+	const r = random(seed, 0, 30);
 	console.log(r);
 	const theta = random(seed + 1) * Math.PI * 2;
 
