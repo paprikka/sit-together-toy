@@ -34,6 +34,7 @@
 		cursor: pointer;
 		transition: 0.4s box-shadow;
 		rotate: var(--base-rotation);
+		padding: 0;
 	}
 
 	.chirp::after {
