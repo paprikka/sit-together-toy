@@ -20,6 +20,7 @@
 		--color: var(--color-text);
 		--base-rotation: -37deg;
 		position: absolute;
+		appearance: none;
 		bottom: 1rem;
 		left: 50%;
 		translate: -50% 0;
