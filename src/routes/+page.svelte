@@ -1,15 +1,13 @@
 <script lang="ts">
-	import Dot from '$lib/components/dot.svelte';
-	import { dots } from '$lib/dot-store';
+	import ChirpButton from '$lib/components/chirp-button.svelte';
+	import Dots from '$lib/components/dots.svelte';
+	import { dots, makeDot, selectedDot } from '$lib/dot-store';
 	import { onMount } from 'svelte';
 	import { derived } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 	import type { ClientChirpMessage, ServerRoomUpdateMessage } from '../../party/types';
 	import { initAudio, type Audio } from './audio';
 	import { messages, sendMessage } from './socket';
-	import { makeDot } from '$lib/dot-store';
-	import Dots from '$lib/components/dots.svelte';
-	import ChirpButton from '$lib/components/chirp-button.svelte';
 
 	let audioFadeDuration = 7000;
 	let overlayFadeDuration = 2000;
@@ -20,8 +18,6 @@
 	let audio: Audio | null = null;
 
 	onMount(() => {
-		// if (location.hostname === 'localhost') onStartClick();
-
 		initAudio().then((instance) => (audio = instance));
 		if (new URLSearchParams(location.search).has('debug')) {
 			audioFadeDuration = 100;
@@ -124,9 +120,81 @@
 			type: 'client:chirp'
 		} as ClientChirpMessage);
 	};
+
+	const playKey = (_key: string) => {
+		audio?.getSound('chirp')?.play();
+	};
 </script>
 
 <Dots />
+
+{#if $selectedDot}
+	<div class="selectedDot">
+		<p transition:fade>
+			[ {$selectedDot.id.split('-')[0]} ]
+		</p>
+		<ul>
+			<li
+				transition:fade={{
+					delay: 100
+				}}
+			>
+				<button on:click={() => playKey('c')}>c</button>
+			</li>
+			<li
+				transition:fade={{
+					delay: 120
+				}}
+			>
+				<button on:click={() => playKey('d')}>d</button>
+			</li>
+			<li
+				transition:fade={{
+					delay: 140
+				}}
+			>
+				<button on:click={() => playKey('e')}>e</button>
+			</li>
+			<li
+				transition:fade={{
+					delay: 160
+				}}
+			>
+				<button on:click={() => playKey('f')}>f</button>
+			</li>
+			<li
+				transition:fade={{
+					delay: 180
+				}}
+			>
+				<button on:click={() => playKey('g')}>g</button>
+			</li>
+			<li
+				transition:fade={{
+					delay: 200
+				}}
+			>
+				<button on:click={() => playKey('a')}>a</button>
+			</li>
+			<li
+				transition:fade={{
+					delay: 220
+				}}
+			>
+				<button on:click={() => playKey('h')}>h</button>
+			</li>
+			<li
+				transition:fade={{
+					delay: 240
+				}}
+			>
+				<button on:click={() => playKey('c')}>c</button>
+			</li>
+		</ul>
+		<p transition:fade><button on:click={() => ($selectedDot = null)}>close</button></p>
+	</div>
+{/if}
+
 {#if isOverlayVisible}
 	<div class="overlay" transition:fade={{ duration: overlayFadeDuration }}>
 		<button on:click={onStartClick}>start</button>
@@ -136,6 +204,41 @@
 <ChirpButton cooldownDuration={`${chirpCooldown}ms`} on:click={onChirpClick} disabled={!canChirp} />
 
 <style>
+	.selectedDot {
+		position: absolute;
+		top: 1rem;
+		right: 1rem;
+		left: 1rem;
+		text-align: center;
+		font-family: monospace;
+	}
+
+	.selectedDot ul {
+		list-style: none;
+		padding: 0;
+		display: block;
+	}
+
+	.selectedDot li {
+		display: inline-block;
+	}
+
+	.selectedDot button {
+		appearance: none;
+		font-family: inherit;
+		background-color: var(--color-text);
+		color: var(--color-bg);
+		border: none;
+		border-radius: 0.25em;
+		font-size: var(--step--2);
+		padding: 0.1em 0.5ch;
+		cursor: pointer;
+	}
+
+	.selectedDot button:hover {
+		opacity: 0.8;
+	}
+
 	.overlay {
 		position: absolute;
 		inset: 0;

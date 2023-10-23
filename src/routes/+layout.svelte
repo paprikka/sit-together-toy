@@ -10,6 +10,8 @@
 		line-height: 1.5;
 		font-weight: 400;
 
+		--color-bg: black;
+
 		--color-text-h: 30deg;
 		--color-text-s: 60.98%;
 		--color-text-l: 83.92%;

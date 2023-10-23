@@ -12,6 +12,7 @@ export type DotState = {
 };
 
 export const dots = writable<Map<string, DotState>>(new Map());
+export const selectedDot = writable<DotState | null>(null);
 
 export const removeDot = (id: string) => {
 	dots.update((value) => {
