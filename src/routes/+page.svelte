@@ -18,8 +18,33 @@
 
 	let audio: Audio | null = null;
 
+	const initPlanetKeys = () => {
+		const keyToIDMap: Record<string, string> = {
+			a: 'key_1',
+			s: 'key_2',
+			d: 'key_3',
+			f: 'key_4',
+			g: 'key_5'
+		};
+
+		const onKey = (e: KeyboardEvent) => {
+			const key = e.key.toLowerCase();
+			if (!(key in keyToIDMap)) return;
+
+			audio?.getSound(keyToIDMap[key])?.play();
+		};
+
+		window.addEventListener('keydown', onKey);
+
+		return {
+			dispose: () => window.removeEventListener('keydown', onKey)
+		};
+	};
+
 	onMount(() => {
 		initAudio($featureToggles).then((instance) => (audio = instance));
+		const planetKeys = initPlanetKeys();
+
 		if ($featureToggles.debugQuickOverlay) {
 			audioFadeDuration = 100;
 			overlayFadeDuration = 100;
@@ -28,8 +53,8 @@
 
 		return () => {
 			console.log('dispose');
-			if (!audio) return;
-			audio.dispose();
+			planetKeys.dispose();
+			audio?.dispose();
 		};
 	});
 
@@ -89,7 +114,7 @@
 
 		const { message } = $lastMessage;
 
-		if (message.type === 'client:chirp') chirp();
+		if (message.type === 'client:gong') audio?.getSound('gong')?.play();
 	});
 
 	const onStartClick = () => {
@@ -102,13 +127,6 @@
 		bg.fade(0, 0.4, audioFadeDuration, id);
 	};
 
-	const chirp = () => {
-		if (!audio) return;
-		const chirp = audio.getSound('gong');
-		if (!chirp) return;
-		chirp.play();
-	};
-
 	const onChirpClick = () => {
 		canChirp = false;
 
@@ -118,13 +136,18 @@
 			canChirp = true;
 		}, chirpCooldown);
 		sendMessage({
-			type: 'client:chirp'
+			type: 'client:gong'
 		} as ClientChirpMessage);
 	};
 
-	const playKey = (_key: string) => {
-		audio?.getSound('chirp')?.play();
+	const playKey = (key: string) => {
+		audio?.getSound(key)?.play();
 	};
+
+	const planets = ['☿', '♀', '♂', '♃', '♄'].map((symbol, ind) => ({
+		sound: `key_${ind + 1}`,
+		symbol
+	}));
 </script>
 
 <Dots />
@@ -135,62 +158,11 @@
 			[ {$selectedDot.id.split('-')[0]} ]
 		</p>
 		<ul>
-			<li
-				transition:fade={{
-					delay: 100
-				}}
-			>
-				<button on:click={() => playKey('c')}>c</button>
-			</li>
-			<li
-				transition:fade={{
-					delay: 120
-				}}
-			>
-				<button on:click={() => playKey('d')}>d</button>
-			</li>
-			<li
-				transition:fade={{
-					delay: 140
-				}}
-			>
-				<button on:click={() => playKey('e')}>e</button>
-			</li>
-			<li
-				transition:fade={{
-					delay: 160
-				}}
-			>
-				<button on:click={() => playKey('f')}>f</button>
-			</li>
-			<li
-				transition:fade={{
-					delay: 180
-				}}
-			>
-				<button on:click={() => playKey('g')}>g</button>
-			</li>
-			<li
-				transition:fade={{
-					delay: 200
-				}}
-			>
-				<button on:click={() => playKey('a')}>a</button>
-			</li>
-			<li
-				transition:fade={{
-					delay: 220
-				}}
-			>
-				<button on:click={() => playKey('h')}>h</button>
-			</li>
-			<li
-				transition:fade={{
-					delay: 240
-				}}
-			>
-				<button on:click={() => playKey('c')}>c</button>
-			</li>
+			{#each planets as planet, ind}
+				<li transition:fade={{ delay: 100 + ind * 30 }}>
+					<button on:click={() => playKey(planet.sound)}>{planet.symbol}{ind}</button>
+				</li>
+			{/each}
 		</ul>
 		<p transition:fade><button on:click={() => ($selectedDot = null)}>close</button></p>
 	</div>
@@ -212,26 +184,32 @@
 		left: 1rem;
 		text-align: center;
 		font-family: monospace;
+
+		--_w: var(--step-3);
 	}
 
 	.selectedDot ul {
 		list-style: none;
 		padding: 0;
-		display: block;
+		display: flex;
+		gap: 1rem;
+		justify-content: center;
 	}
 
 	.selectedDot li {
-		display: inline-block;
+		display: block;
 	}
 
-	.selectedDot button {
+	.selectedDot ul button {
 		appearance: none;
+		width: var(--_w);
+		height: var(--_w);
 		font-family: inherit;
 		background-color: var(--color-text);
 		color: var(--color-bg);
 		border: none;
-		border-radius: 0.25em;
-		font-size: var(--step--2);
+		border-radius: 100rem;
+		font-size: calc(var(--_w) * 0.6);
 		padding: 0.1em 0.5ch;
 		cursor: pointer;
 	}

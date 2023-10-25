@@ -1,5 +1,5 @@
 import type { FeatureToggles } from '$lib/feature-toggles';
-import { Howl, type HowlOptions, Howler } from 'howler';
+import { Howl, Howler, type HowlOptions } from 'howler';
 
 export const initAudio = async (featureToggles: FeatureToggles) => {
 	Howler.autoUnlock = true;
@@ -42,7 +42,15 @@ export const initAudio = async (featureToggles: FeatureToggles) => {
 		load('gong', {
 			src: '/sfx/gong.mp3',
 			volume: 0.2
-		})
+		}),
+		...Array(5)
+			.fill(null)
+			.map((_, ind) =>
+				load(`key_${ind + 1}`, {
+					src: `/sfx/key_${ind + 1}.mp3`,
+					volume: 0.4
+				})
+			)
 	]);
 
 	const dispose = () => {
