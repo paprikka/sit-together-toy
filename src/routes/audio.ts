@@ -1,7 +1,9 @@
+import type { FeatureToggles } from '$lib/feature-toggles';
 import { Howl, type HowlOptions, Howler } from 'howler';
 
-export const initAudio = async () => {
+export const initAudio = async (featureToggles: FeatureToggles) => {
 	Howler.autoUnlock = true;
+	Howler.volume(featureToggles.volume);
 
 	const load = (id: string, options: HowlOptions): Promise<Howl> =>
 		new Promise((resolve, reject) => {

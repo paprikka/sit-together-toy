@@ -2,6 +2,7 @@
 	import ChirpButton from '$lib/components/chirp-button.svelte';
 	import Dots from '$lib/components/dots.svelte';
 	import { dots, makeDot, selectedDot } from '$lib/dot-store';
+	import { featureToggles } from '$lib/feature-toggles';
 	import { onMount } from 'svelte';
 	import { derived } from 'svelte/store';
 	import { fade } from 'svelte/transition';
@@ -18,8 +19,8 @@
 	let audio: Audio | null = null;
 
 	onMount(() => {
-		initAudio().then((instance) => (audio = instance));
-		if (new URLSearchParams(location.search).has('debug')) {
+		initAudio($featureToggles).then((instance) => (audio = instance));
+		if ($featureToggles.debugQuickOverlay) {
 			audioFadeDuration = 100;
 			overlayFadeDuration = 100;
 			chirpCooldown = 100;
