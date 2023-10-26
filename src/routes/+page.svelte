@@ -4,34 +4,63 @@
 	import { dots, makeDot, selectedDot } from '$lib/dot-store';
 	import { featureToggles } from '$lib/feature-toggles';
 	import { onMount } from 'svelte';
-	import { derived } from 'svelte/store';
+	import { derived, writable } from 'svelte/store';
 	import { fade } from 'svelte/transition';
 	import type { ClientChirpMessage, ServerRoomUpdateMessage } from '../../party/types';
 	import { initAudio, type Audio } from './audio';
 	import { messages, sendMessage } from './socket';
+	import { stubTrue } from 'lodash';
 
 	let audioFadeDuration = 7000;
 	let overlayFadeDuration = 2000;
 	let isOverlayVisible = true;
 	let canChirp = true;
 	let chirpCooldown = 3000;
+	let touchSupported = true;
 
 	let audio: Audio | null = null;
 
-	const initPlanetKeys = () => {
-		const keyToIDMap: Record<string, string> = {
-			a: 'key_1',
-			s: 'key_2',
-			d: 'key_3',
-			f: 'key_4',
-			g: 'key_5'
+	const keyToIDMap: Record<string, string> = {
+		a: 'key_1',
+		s: 'key_2',
+		d: 'key_3',
+		f: 'key_4',
+		g: 'key_5'
+	};
+
+	let activeKeys = writable<Set<string>>(new Set());
+
+	const triggerKey = (charKey: string, source: 'keyboard' | 'touch') => {
+		const soundID = keyToIDMap[charKey];
+		if (!soundID) return;
+
+		audio?.getSound(soundID)?.play();
+		activeKeys.set(new Set([...$activeKeys, charKey]));
+
+		const clearKey = () => {
+			activeKeys.set(new Set([...$activeKeys].filter((k) => k !== charKey)));
 		};
 
+		if (source === 'touch') {
+			const onPointerUp = () => {
+				clearKey();
+				window.removeEventListener('pointerup', onPointerUp);
+			};
+			window.addEventListener('pointerup', onPointerUp);
+		} else {
+			const onKeyUp = (e: KeyboardEvent) => {
+				if (e.key.toLowerCase() !== charKey) return;
+				clearKey();
+				window.removeEventListener('keyup', onKeyUp);
+			};
+			window.addEventListener('keyup', onKeyUp);
+		}
+	};
+
+	const initPlanetKeys = () => {
 		const onKey = (e: KeyboardEvent) => {
 			const key = e.key.toLowerCase();
-			if (!(key in keyToIDMap)) return;
-
-			audio?.getSound(keyToIDMap[key])?.play();
+			triggerKey(key, 'keyboard');
 		};
 
 		window.addEventListener('keydown', onKey);
@@ -44,6 +73,8 @@
 	onMount(() => {
 		initAudio($featureToggles).then((instance) => (audio = instance));
 		const planetKeys = initPlanetKeys();
+
+		touchSupported = 'ontouchstart' in window;
 
 		if ($featureToggles.debugQuickOverlay) {
 			audioFadeDuration = 100;
@@ -139,32 +170,28 @@
 			type: 'client:gong'
 		} as ClientChirpMessage);
 	};
-
-	const playKey = (key: string) => {
-		audio?.getSound(key)?.play();
-	};
-
-	const planets = ['☿', '♀', '♂', '♃', '♄'].map((symbol, ind) => ({
-		sound: `key_${ind + 1}`,
-		symbol
-	}));
 </script>
 
 <Dots />
 
 {#if $selectedDot}
-	<div class="selectedDot">
-		<p transition:fade>
-			[ {$selectedDot.id.split('-')[0]} ]
-		</p>
+	<div transition:fade={{ duration: 300 }} class="selectedDot" class:noTouch={!touchSupported}>
+		<p transition:fade>[ {$selectedDot.id.split('-')[0]} ]</p>
 		<ul>
-			{#each planets as planet, ind}
-				<li transition:fade={{ delay: 100 + ind * 30 }}>
-					<button on:click={() => playKey(planet.sound)}>{planet.symbol}{ind}</button>
+			{#each Object.keys(keyToIDMap) as char, ind}
+				<li>
+					<button
+						class:isPlaying={$activeKeys.has(char)}
+						on:pointerdown={() => triggerKey(char, 'touch')}
+					>
+						{#if !touchSupported}{char}{/if}
+					</button>
 				</li>
 			{/each}
 		</ul>
-		<p transition:fade><button on:click={() => ($selectedDot = null)}>close</button></p>
+		<p transition:fade>
+			<button class="closeButton" on:click={() => ($selectedDot = null)}>close</button>
+		</p>
 	</div>
 {/if}
 
@@ -209,9 +236,28 @@
 		color: var(--color-bg);
 		border: none;
 		border-radius: 100rem;
-		font-size: calc(var(--_w) * 0.6);
-		padding: 0.1em 0.5ch;
+		font-size: calc(var(--_w) * 0.35);
+		padding: 0 0 0.1em;
 		cursor: pointer;
+		transition: 0.1s opacity, 0.1s scale;
+		/* transition-timing-function: ease-out; */
+	}
+
+	.selectedDot .isPlaying {
+		opacity: 0.8;
+		scale: 0.8;
+	}
+
+	.closeButton {
+		appearance: none;
+		border: 1px solid var(--color-text);
+		color: var(--color-text);
+		font-family: monospace;
+		padding: 0.5em 1em;
+		font-size: var(--step--2);
+		font-weight: bold;
+		background: transparent;
+		border-radius: 0.5em;
 	}
 
 	.selectedDot button:hover {
