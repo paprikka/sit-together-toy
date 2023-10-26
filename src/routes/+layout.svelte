@@ -6,6 +6,13 @@
 		content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
 	/>
 	<title>Sit (together)</title>
+	<script
+		async
+		defer
+		data-website-id="90ba0800-0970-433d-8221-d6c903f02af6"
+		src="https://sonnet-events.vercel.app/umami.js"
+		data-domains="sit-together-toy.vercel.app"
+	></script>
 </svelte:head>
 
 <style>
