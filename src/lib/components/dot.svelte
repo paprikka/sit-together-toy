@@ -20,7 +20,7 @@
 	style:--y={y}
 	style:--delay={random(0, 0.5) + 's'}
 	style:--h={random(0, 360)}
-	style:--scale={random(0.5, 8)}
+	style:--scale={random(0.8, 8)}
 	style:--spin-speed={random(1, 9)}
 	style:--flicker-speed={random(0.1, 5)}
 	style:--texture-url={`url(${starURL})`}
@@ -105,7 +105,7 @@
 		height: 100px;
 		content: '';
 		border-radius: 1000rem;
-		border: 1px solid white;
+		border: 1px solid hsl(var(--color-text-h) var(--color-text-s) var(--color-text-l) / 0.7);
 		translate: -50% -50%;
 		left: 50%;
 		top: 50%;
