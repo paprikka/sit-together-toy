@@ -12,8 +12,7 @@
 		ServerRoomUpdateMessage
 	} from '../../party/types';
 	import { initAudio, type Audio } from './audio';
-	import { messages, sendMessage } from './socket';
-	import { stubTrue } from 'lodash';
+	import { clientID, messages, sendMessage } from './socket';
 
 	let audioFadeDuration = 7000;
 	let overlayFadeDuration = 2000;
@@ -35,20 +34,23 @@
 	let activeKeys = writable<Set<string>>(new Set());
 
 	const triggerKey = (charKey: string, source: 'keyboard' | 'touch') => {
+		if (!$selectedDot) {
+			console.warn('no selected dot');
+			return;
+		}
+
 		const soundID = keyToIDMap[charKey];
 		if (!soundID) return;
 
 		audio?.getSound(soundID)?.play();
 
-		if (!$selectedDot) {
-			console.warn('no selected dot');
-			return;
+		if ($selectedDot.id !== $clientID) {
+			sendMessage({
+				type: 'client:chirp',
+				soundID,
+				to: $selectedDot.id
+			} as ClientSendChirpMessage);
 		}
-		sendMessage({
-			type: 'client:chirp',
-			soundID,
-			to: $selectedDot.id
-		} as ClientSendChirpMessage);
 		activeKeys.set(new Set([...$activeKeys, charKey]));
 
 		const clearKey = () => {
@@ -191,13 +193,15 @@
 			type: 'client:gong'
 		} as ClientBroadcastGongMessage);
 	};
+
+	$: selectedDotName = $selectedDot?.id === $clientID ? 'You' : $selectedDot?.id.split('-')[0];
 </script>
 
 <Dots />
 
 {#if $selectedDot}
 	<div transition:fade={{ duration: 300 }} class="selectedDot" class:noTouch={!touchSupported}>
-		<p transition:fade>[ {$selectedDot.id.split('-')[0]} ]</p>
+		<p transition:fade>[ {selectedDotName} ]</p>
 		<ul>
 			{#each Object.keys(keyToIDMap) as char, ind}
 				<li>

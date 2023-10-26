@@ -10,6 +10,7 @@ const socket = new PartySocket({
 });
 
 export const messages = writable<ServerMessage[]>([]);
+export const clientID = writable<string | null>(socket.id);
 
 socket.onmessage = (event) => {
 	try {
