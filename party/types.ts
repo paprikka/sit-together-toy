@@ -8,12 +8,22 @@ export type ClientLeftMessage = {
 	//   clientID: string;
 };
 
-export type ClientChirpMessage = {
+export type ClientBroadcastGongMessage = {
 	type: 'client:gong';
 	//   clientID: string;
 };
 
-export type ClientMessage = ClientJoinedMessage | ClientLeftMessage | ClientChirpMessage;
+export type ClientSendChirpMessage = {
+	type: 'client:chirp';
+	to: string;
+	soundID: string;
+};
+
+export type ClientMessage =
+	| ClientJoinedMessage
+	| ClientLeftMessage
+	| ClientBroadcastGongMessage
+	| ClientSendChirpMessage;
 
 export type ServerErrorMessage = {
 	type: 'server:error';
@@ -33,8 +43,15 @@ export type ServerBroadcastClientMessage = {
 	message: ClientMessage;
 };
 
+export type ServerChirpMessage = {
+	type: 'server:chirp';
+	from: string;
+	soundID: string;
+};
+
 export type ServerMessage =
 	| ServerErrorMessage
 	| ServerJoinConfirmedMessage
 	| ServerBroadcastClientMessage
-	| ServerRoomUpdateMessage;
+	| ServerRoomUpdateMessage
+	| ServerChirpMessage;

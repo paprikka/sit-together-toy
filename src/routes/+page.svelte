@@ -6,7 +6,11 @@
 	import { onMount } from 'svelte';
 	import { derived, writable } from 'svelte/store';
 	import { fade } from 'svelte/transition';
-	import type { ClientChirpMessage, ServerRoomUpdateMessage } from '../../party/types';
+	import type {
+		ClientBroadcastGongMessage,
+		ClientSendChirpMessage,
+		ServerRoomUpdateMessage
+	} from '../../party/types';
 	import { initAudio, type Audio } from './audio';
 	import { messages, sendMessage } from './socket';
 	import { stubTrue } from 'lodash';
@@ -35,6 +39,16 @@
 		if (!soundID) return;
 
 		audio?.getSound(soundID)?.play();
+
+		if (!$selectedDot) {
+			console.warn('no selected dot');
+			return;
+		}
+		sendMessage({
+			type: 'client:chirp',
+			soundID,
+			to: $selectedDot.id
+		} as ClientSendChirpMessage);
 		activeKeys.set(new Set([...$activeKeys, charKey]));
 
 		const clearKey = () => {
@@ -141,6 +155,13 @@
 
 	lastMessage.subscribe(($lastMessage) => {
 		if (!$lastMessage) return;
+
+		if ($lastMessage.type === 'server:chirp') {
+			const soundID = $lastMessage.soundID;
+			audio?.getSound(soundID)?.play();
+			return;
+		}
+
 		if ($lastMessage.type !== 'server:broadcast-client-message') return;
 
 		const { message } = $lastMessage;
@@ -168,7 +189,7 @@
 		}, chirpCooldown);
 		sendMessage({
 			type: 'client:gong'
-		} as ClientChirpMessage);
+		} as ClientBroadcastGongMessage);
 	};
 </script>
 
