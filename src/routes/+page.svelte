@@ -269,6 +269,12 @@
 		/* transition-timing-function: ease-out; */
 	}
 
+	@media (max-width: 600px) {
+		.selectedDot ul button {
+			--_w: var(--step-5);
+		}
+	}
+
 	.selectedDot .isPlaying {
 		opacity: 0.8;
 		scale: 0.8;
