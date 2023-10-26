@@ -1,7 +1,7 @@
 import { writable } from 'svelte/store';
 import { random } from './random';
 
-export type DotStatus = 'entering' | 'idle' | 'leaving' | 'chirp';
+export type DotStatus = 'idle' | 'chirping';
 
 export type DotState = {
 	seed: number;
@@ -64,7 +64,29 @@ export const makeDot = (clientID: string): DotState => {
 		id: clientID,
 		x: x,
 		y: y,
-		status: 'entering',
+		status: 'idle',
 		seed
 	};
+};
+
+export const chirpDot = (clientID: string) => {
+	dots.update((value) => {
+		const dot = value.get(clientID);
+		if (dot) {
+			dot.status = 'chirping';
+			value.set(clientID, dot);
+		}
+		return value;
+	});
+
+	setTimeout(() => {
+		dots.update((value) => {
+			const dot = value.get(clientID);
+			if (dot) {
+				dot.status = 'idle';
+				value.set(clientID, dot);
+			}
+			return value;
+		});
+	}, 100);
 };

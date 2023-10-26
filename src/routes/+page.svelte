@@ -1,7 +1,7 @@
 <script lang="ts">
 	import ChirpButton from '$lib/components/chirp-button.svelte';
 	import Dots from '$lib/components/dots.svelte';
-	import { dots, makeDot, selectedDot } from '$lib/dot-store';
+	import { chirpDot, dots, makeDot, selectedDot } from '$lib/dot-store';
 	import { featureToggles } from '$lib/feature-toggles';
 	import { onMount } from 'svelte';
 	import { derived, writable } from 'svelte/store';
@@ -161,6 +161,7 @@
 		if ($lastMessage.type === 'server:chirp') {
 			const soundID = $lastMessage.soundID;
 			audio?.getSound(soundID)?.play();
+			chirpDot($lastMessage.from);
 			return;
 		}
 

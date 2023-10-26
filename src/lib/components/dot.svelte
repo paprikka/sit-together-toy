@@ -19,7 +19,7 @@
 	style:--x={x}
 	style:--y={y}
 	style:--delay={random(0, 0.5) + 's'}
-	style:--h={random(seed) * 360}
+	style:--h={random(0, 360)}
 	style:--scale={random(0.5, 8)}
 	style:--spin-speed={random(1, 9)}
 	style:--flicker-speed={random(0.1, 5)}
@@ -33,7 +33,11 @@
 		class:is-selected={isSelected}
 		transition:scale={{ duration: random(1000, 2000), easing: bounceOut }}
 		on:click={() => dispatch('click')}
-	/>
+	>
+		{#if state.status === 'chirping'}
+			<div class="chirp-indicator" />
+		{/if}
+	</div>
 </div>
 
 <style>
@@ -80,10 +84,10 @@
 		background-image: var(--texture-url);
 		background-size: contain;
 
-		filter: brightness(0.9) sepia(100%) saturate(1) hue-rotate(calc(var(--h) * 1deg));
+		filter: hue-rotate(calc(var(--h) * 1deg)) saturate(0.15) brightness(4);
 
 		/* --flicker-speed: 0.11; */
-		--min-opacity: 0.5;
+		--min-opacity: 0.2;
 		--max-opacity: 1;
 
 		animation-name: flicker;
@@ -114,5 +118,40 @@
 		opacity: 1;
 		scale: 1;
 		visibility: visible;
+	}
+
+	.chirp-indicator {
+		position: absolute;
+		left: 50%;
+		top: 50%;
+		translate: -50% -50%;
+		width: 100%;
+		height: 100%;
+		border-radius: 1000rem;
+		/* background: radial-gradient(circle, rgb(255, 255, 255) 0%, rgba(255, 255, 255, 0) 100%); */
+
+		background: radial-gradient(
+			circle,
+			hsl(var(--color-text-h) var(--color-text-s) var(--color-text-l) / 0.2) 0%,
+			hsl(var(--color-text-h) var(--color-text-s) var(--color-text-l) / 0) 100%
+		);
+		animation: chirp 100ms ease-out infinite both;
+	}
+
+	@keyframes chirp {
+		from {
+			opacity: 0;
+			scale: 0;
+		}
+
+		30% {
+			opacity: 1;
+			scale: 1;
+		}
+
+		to {
+			scale: 4;
+			opacity: 0;
+		}
 	}
 </style>
