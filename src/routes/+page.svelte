@@ -229,7 +229,21 @@
 
 <ChirpButton cooldownDuration={`${chirpCooldown}ms`} on:click={onChirpClick} disabled={!canChirp} />
 
+<footer>by <a href="https://sonnet.io" target="_blank">Rafał</a></footer>
+
 <style>
+	footer {
+		position: absolute;
+		left: var(--step-1);
+		bottom: var(--step-1);
+		color: var(--color-text);
+		opacity: 0.7;
+	}
+
+	footer a {
+		color: inherit;
+	}
+
 	.selectedDot {
 		position: absolute;
 		top: 1rem;
