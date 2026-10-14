@@ -1,4 +1,4 @@
-import type * as Party from 'partykit/server';
+import { Server, routePartykitRequest, type Connection, type ConnectionContext } from 'partyserver';
 import {
 	ClientMessage,
 	ServerBroadcastClientMessage,
@@ -7,75 +7,79 @@ import {
 	ServerRoomUpdateMessage
 } from './types';
 
-export default class Server implements Party.Server {
-	constructor(readonly party: Party.Party) {}
+type Env = { Main: DurableObjectNamespace<Main> };
 
-	sendMessage(conn: Party.Connection, message: ServerMessage | ClientMessage) {
+// Binding name `Main` becomes party `main` in the URL, which is what partysocket
+// sends by default. Rename it and every client breaks.
+export class Main extends Server<Env> {
+	// Idle sitters keep sockets open for hours. Without hibernation each one
+	// burns free-tier GB-s the whole time.
+	static options = { hibernate: true };
+
+	sendMessage(conn: Connection, message: ServerMessage | ClientMessage) {
 		conn.send(JSON.stringify(message));
 	}
 
-	onConnect(conn: Party.Connection, ctx: Party.ConnectionContext) {
-		// A websocket just connected!
-		console.log('Connected', {
-			id: conn.id,
-			room: this.party.id,
-			url: new URL(ctx.request.url).pathname
-		});
-
-		this.sendMessage(conn, { type: 'server:join-confirmed' });
-		this.party.broadcast(
+	broadcastRoomUpdate() {
+		this.broadcast(
 			JSON.stringify({
 				type: 'server:room-update',
-				clients: [...this.party.getConnections()].map((conn) => conn.id)
+				clients: [...this.getConnections()].map((conn) => conn.id)
 			} as ServerRoomUpdateMessage)
 		);
 	}
 
-	onMessage(message: string, sender: Party.Connection) {
-		// let's log the message
+	onConnect(conn: Connection, ctx: ConnectionContext) {
+		console.log('Connected', {
+			id: conn.id,
+			room: this.name,
+			url: new URL(ctx.request.url).pathname
+		});
+
+		this.sendMessage(conn, { type: 'server:join-confirmed' });
+		this.broadcastRoomUpdate();
+	}
+
+	onMessage(sender: Connection, message: string | ArrayBuffer | ArrayBufferView) {
+		if (typeof message !== 'string') return;
+
 		console.log(`connection ${sender.id} sent message: ${message}`);
-		// as well as broadcast it to all the other connections in the room...
 
 		const parsed = JSON.parse(message);
 
 		if (parsed.type === 'client:chirp') {
-			const message: ServerChirpMessage = {
+			const chirp: ServerChirpMessage = {
 				type: 'server:chirp',
 				from: sender.id,
 				soundID: parsed.soundID
 			};
 
-			const toConnection = [...this.party.getConnections()].find((conn) => conn.id === parsed.to);
+			const toConnection = this.getConnection(parsed.to);
 			if (!toConnection) {
 				console.warn(`Cannot find connection with id ${parsed.to}.`);
 				return;
 			}
 
-			this.sendMessage(toConnection, message);
-
+			this.sendMessage(toConnection, chirp);
 			return;
 		}
 
-		this.party.broadcast(
+		this.broadcast(
 			JSON.stringify({
 				type: 'server:broadcast-client-message',
-				message: JSON.parse(message)
+				message: parsed
 			} as ServerBroadcastClientMessage),
-			// []
-			// ...except for the connection it came from
 			[sender.id]
 		);
 	}
 
-	onClose(connection: Party.Connection<unknown>): void | Promise<void> {
+	onClose(connection: Connection) {
 		console.log('Closed', connection.id);
-		this.party.broadcast(
-			JSON.stringify({
-				type: 'server:room-update',
-				clients: [...this.party.getConnections()].map((conn) => conn.id)
-			} as ServerRoomUpdateMessage)
-		);
+		this.broadcastRoomUpdate();
 	}
 }
 
-Server satisfies Party.Worker;
+export default {
+	fetch: async (req: Request, env: Env) =>
+		(await routePartykitRequest(req, env)) ?? new Response('Not found', { status: 404 })
+};

@@ -1,0 +1,14 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "sit-together-party",
+	"main": "party/index.ts",
+	"compatibility_date": "2026-10-01",
+	"durable_objects": {
+		"bindings": [{ "name": "Main", "class_name": "Main" }]
+	},
+	"migrations": [
+		// free plan only allows SQLite-backed classes, `new_classes` fails deploy
+		{ "tag": "v1", "new_sqlite_classes": ["Main"] }
+	],
+	"observability": { "enabled": true }
+}

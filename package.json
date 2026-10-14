@@ -4,19 +4,21 @@
 	"private": true,
 	"scripts": {
 		"dev:client": "vite dev --host",
-		"dev:api": "pnpx partykit dev",
-		"deploy:api": "partykit deploy",
+		"dev:api": "wrangler dev --ip 0.0.0.0",
+		"deploy:api": "wrangler deploy",
 		"dev": "pnpm concurrently 'pnpm dev:client' 'pnpm dev:api'",
-		"build": "vite build && pnpm deploy:api",
+		"build": "vite build",
 		"preview": "vite preview",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test": "vitest",
 		"lint": "prettier --plugin-search-dir . --check . && eslint .",
-		"format": "prettier --plugin-search-dir . --write ."
+		"format": "prettier --plugin-search-dir . --write .",
+		"check:api": "tsc -p party/tsconfig.json"
 	},
 	"devDependencies": {
-		"@sveltejs/adapter-auto": "^2.0.0",
+		"@cloudflare/workers-types": "^5.20261013.1",
+		"@sveltejs/adapter-vercel": "^3.1.0",
 		"@sveltejs/kit": "^1.20.4",
 		"@types/howler": "^2.2.10",
 		"@types/lodash": "^4.14.200",
@@ -27,7 +29,6 @@
 		"eslint": "^8.28.0",
 		"eslint-config-prettier": "^8.5.0",
 		"eslint-plugin-svelte": "^2.30.0",
-		"partykit": "0.0.32",
 		"prettier": "^2.8.0",
 		"prettier-plugin-svelte": "^2.10.1",
 		"svelte": "^4.0.5",
@@ -35,12 +36,18 @@
 		"tslib": "^2.4.1",
 		"typescript": "^5.0.0",
 		"vite": "^4.4.2",
-		"vitest": "^0.34.0"
+		"vitest": "^0.34.0",
+		"wrangler": "^4.150.0"
 	},
 	"type": "module",
 	"dependencies": {
 		"howler": "^2.2.4",
 		"lodash": "^4.17.21",
-		"partysocket": "0.0.12"
+		"partyserver": "^0.5.10",
+		"partysocket": "1.3.0"
+	},
+	"packageManager": "pnpm@12.6.0",
+	"engines": {
+		"node": ">=22"
 	}
 }
